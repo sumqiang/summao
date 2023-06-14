@@ -1,0 +1,78 @@
+import requests
+from selenium import webdriver
+from lxml import html
+import re
+import time
+import json
+from loguru import logger
+import os
+from openpyxl import Workbook
+from openpyxl import load_workbook
+import datetime
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver import ActionChains
+from selenium.webdriver.support.wait import WebDriverWait
+
+
+'''
+思路：
+一、手动登录metamask
+二、创建账号：点击头像-点击导入账户-输入私钥-等待1s点击导入-等待2s
+三、重复执行第二步
+'''
+class Import_key(object):
+    def __init__(self):
+        with open('primary_key.json', 'r', encoding='utf-8') as f:
+            config_text = f.read()
+            # print(config_text)
+            #if config_text.startswith(u'\ufeff'):
+                #config_text = config_text.encode('utf8')[3:].decode('utf8')
+        try:
+            self.search_info = json.loads(config_text)
+        except Exception as e:
+            logger.debug(e)
+            logger.info('【config】配置文件不是json格式，请检查后重启')
+            time.sleep(60 * 5)
+
+    def _import(self, primary_key):
+        try:
+            # 1.点击头像
+            driver.find_elements_by_css_selector('svg')[0].click()
+            time.sleep(2)
+            # 2.点击导入账户
+            driver.find_elements_by_xpath('//div[@class="account-menu__item account-menu__item--clickable"]')[1].click()
+            time.sleep(1)
+            # 3.输入私钥
+            driver.find_element_by_xpath('//*[@id="private-key-box"]').send_keys(primary_key)
+            time.sleep(1)
+            # 4. 点击导入
+            driver.find_element_by_xpath('//*[@id="app-content"]/div/div[3]/div/div/div[2]/div[2]/div[2]/button[2]').click()
+            time.sleep(2)
+        except:
+            driver.get('https://www.baidu.com/')
+            driver.get('chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/home.html')
+
+    def run(self):
+        for i in self.search_info['primary_key']:
+            self._import(i)
+            print(i)
+
+# 启用带插件的浏览器
+option = webdriver.ChromeOptions()
+option.add_argument("--user-data-dir="+r"C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/")
+driver = webdriver.Chrome(chrome_options=option)
+
+# 打开百度，最大化网页
+driver.get('https://www.baidu.com/')
+time.sleep(2)
+driver.maximize_window()
+time.sleep(1)
+# 第一步：打开metamask网页，手动登录账号
+driver.get('chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/home.html')
+
+# 暂停 手动登录账号
+time.sleep(20)
+
+
+import_key = Import_key()
+import_key.run()
